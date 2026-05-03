@@ -1,5 +1,7 @@
 #include "renderer/renderer.h"
+#include "app.h"
 
+#include <SDL3/SDL.h>
 #include <stdio.h>
 
 #define WINDOW_WIDTH  800
@@ -15,11 +17,9 @@ int main(void)
     }
 
     while (renderer_poll_events(renderer)) {
-        /* Clear framebuffer to black (all zeros). */
-        renderer_clear(renderer);
+        float time = (float)SDL_GetTicks() / 1000.0f;
 
-        /* Future blog posts will draw into renderer_get_pixels() here. */
-
+        app_update(renderer, time);
         renderer_present(renderer);
     }
 

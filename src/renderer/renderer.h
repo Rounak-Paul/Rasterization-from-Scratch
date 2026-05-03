@@ -10,8 +10,8 @@
  *
  *   Renderer *r = renderer_create(800, 600, "My Window");
  *   while (renderer_poll_events(r)) {
- *       renderer_clear(r);
- *       // ... draw into renderer_get_pixels(r) ...
+ *       renderer_clear(r, 0xFF000000);
+ *       renderer_draw_indexed(r, verts, vert_count, indices, idx_count, color);
  *       renderer_present(r);
  *   }
  *   renderer_destroy(r);
@@ -19,33 +19,45 @@
 
 typedef struct Renderer Renderer;
 
+/* 2D screen-space vertex. */
+typedef struct {
+    float x, y;
+} Vertex2D;
+
 /* Lifecycle ---------------------------------------------------------------- */
 
-/* Open a window of (width x height) and allocate a matching pixel buffer.
-   Returns NULL on failure; check SDL_GetError() for details. */
 Renderer *renderer_create(int width, int height, const char *title);
-
-/* Release all resources and close the window. */
-void renderer_destroy(Renderer *renderer);
+void      renderer_destroy(Renderer *renderer);
 
 /* Per-frame ---------------------------------------------------------------- */
 
-/* Zero out the entire pixel buffer (renders as opaque black). */
-void renderer_clear(Renderer *renderer);
+/* Clear the framebuffer to color (ARGB8888). Pass 0xFF000000 for opaque black. */
+void renderer_clear(Renderer *renderer, uint32_t color);
 
-/* Upload the pixel buffer to the GPU texture and blit it to the window. */
+/* Upload the pixel buffer and blit it to the window. */
 void renderer_present(Renderer *renderer);
 
 /* Drain the SDL event queue.
-   Returns false when the user requests a quit (close button / Alt-F4 / etc.). */
+   Returns false when the user requests a quit. */
 bool renderer_poll_events(Renderer *renderer);
-
-/* Pixel buffer access ------------------------------------------------------ */
-
-/* Raw pixel buffer in ARGB8888 format, row-major, width * height elements.
-   Modify freely between renderer_clear() and renderer_present(). */
-uint32_t *renderer_get_pixels(Renderer *renderer);
 
 /* Framebuffer dimensions. */
 int renderer_get_width(const Renderer *renderer);
 int renderer_get_height(const Renderer *renderer);
+
+/* Drawing ------------------------------------------------------------------ */
+
+/*
+ * Draw filled triangles from a vertex + index buffer.
+ *
+ *   vertices      — array of Vertex2D in screen space
+ *   vertex_count  — number of entries in vertices[]
+ *   indices       — flat list of vertex indices, every 3 form one triangle
+ *   index_count   — must be a multiple of 3
+ *   color         — ARGB8888 fill color for all triangles
+ */
+void renderer_draw_indexed(Renderer    *renderer,
+                           const Vertex2D  *vertices, int vertex_count,
+                           const uint32_t  *indices,  int index_count,
+                           uint32_t         color);
+

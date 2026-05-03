@@ -13,7 +13,9 @@ add_subdirectory(vendors/sdl)
 
 add_executable(rasterizer
     src/main.c
+    src/app.c
     src/renderer/renderer.c
+    src/renderer/draw.c
 )
 
 target_include_directories(rasterizer PRIVATE

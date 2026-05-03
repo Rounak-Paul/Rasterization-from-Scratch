@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "draw.h"
 
 #include <SDL3/SDL.h>
 
@@ -82,10 +83,9 @@ void renderer_destroy(Renderer *renderer)
 
 /* -------------------------------------------------------------------------- */
 
-void renderer_clear(Renderer *renderer)
+void renderer_clear(Renderer *renderer, uint32_t color)
 {
-    memset(renderer->pixels, 0,
-           (size_t)(renderer->width * renderer->height) * sizeof(uint32_t));
+    draw_fill_color(renderer->pixels, renderer->width, renderer->height, color);
 }
 
 void renderer_present(Renderer *renderer)
@@ -126,4 +126,21 @@ int renderer_get_width(const Renderer *renderer)
 int renderer_get_height(const Renderer *renderer)
 {
     return renderer->height;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void renderer_draw_indexed(Renderer       *renderer,
+                           const Vertex2D *vertices, int vertex_count,
+                           const uint32_t *indices,  int index_count,
+                           uint32_t        color)
+{
+    (void)vertex_count; /* bounds checking can be added later */
+    for (int i = 0; i + 2 < index_count; i += 3) {
+        const Vertex2D v0 = vertices[indices[i    ]];
+        const Vertex2D v1 = vertices[indices[i + 1]];
+        const Vertex2D v2 = vertices[indices[i + 2]];
+        draw_triangle(renderer->pixels, renderer->width, renderer->height,
+                      v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, color);
+    }
 }
